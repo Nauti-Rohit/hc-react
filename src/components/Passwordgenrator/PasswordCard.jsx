@@ -9,6 +9,7 @@ export default function Passwordgenrator() {
   const [numallowed, setNumAllowed] = useState(false);
   const [charallowed, setCharAllowed] = useState(false);
   const [password, setPassword] = useState("");
+  const [copied, setCopied] = useState(false);
 
   //useRef hook
   const passwordRef = useRef(null);
@@ -53,11 +54,30 @@ export default function Passwordgenrator() {
   }, [length, numallowed, charallowed, setPassword]);
 
 
+  // const copyPwdToClipBoard = useCallback(() => {
+  //   passwordRef.current?.select();
+  //   passwordRef.current?.setSelectionRange(0,);
+  //   window.navigator.clipboard.writeText(password);
+  // }, [password])
+
+
   const copyPwdToClipBoard = useCallback(() => {
-    passwordRef.current?.select();
-    passwordRef.current?.setSelectionRange(0,);
-    window.navigator.clipboard.writeText(password);
-  }, [password])
+    if (passwordRef.current) {
+      passwordRef.current.select();
+      passwordRef.current.setSelectionRange(0, password.length);
+      navigator.clipboard
+        .writeText(password)
+        .then(() => {
+          setCopied(true);
+          setTimeout(() => setCopied(false), 2000); // Reset after 2s
+        })
+        .catch(err => {
+          console.error("Failed to copy: ", err);
+        });
+    }
+  }, [password]);
+
+
 
 
   //useEffect hook
@@ -85,7 +105,10 @@ export default function Passwordgenrator() {
 
         <button
           onClick={copyPwdToClipBoard}
-          className="outline-none bg-blue-700 text-white px-3 py-0.5 shrink-0">Copy</button>
+          className="outline-none bg-blue-700 text-white px-3 py-0.5 shrink-0"
+        >
+          {copied ? "Copied" : "Copy"}
+        </button>
       </div>
       <div className="flex text-sm gap-x-2">
         <div className="flex items-center gap-x-1">
