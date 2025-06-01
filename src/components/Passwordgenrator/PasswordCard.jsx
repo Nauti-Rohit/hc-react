@@ -1,42 +1,65 @@
 import { useState, useCallback, useEffect, useRef } from "react";
+// import "App.css"
+
 
 export default function Passwordgenrator() {
+
+  //useState hook
   const [length, setLength] = useState(8);
   const [numallowed, setNumAllowed] = useState(false);
   const [charallowed, setCharAllowed] = useState(false);
   const [password, setPassword] = useState("");
   const [copied, setCopied] = useState(false);
+
+  //useRef hook
   const passwordRef = useRef(null);
 
   const pwdGenrator = useCallback(() => {
     let pass = [];
     let str = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+
     const digits = "0123456789";
     const specials = "$%&'()+,-./:;<=>?@[]^_`{|}~";
+
+    // Always start with basic characters
     let allChars = str;
 
+    // Track mandatory characters
     if (numallowed) {
-      pass.push(digits[Math.floor(Math.random() * digits.length)]);
+      const randDigit = digits[Math.floor(Math.random() * digits.length)];
+      pass.push(randDigit);
       allChars += digits;
     }
 
     if (charallowed) {
-      pass.push(specials[Math.floor(Math.random() * specials.length)]);
+      const randSpecial = specials[Math.floor(Math.random() * specials.length)];
+      pass.push(randSpecial);
       allChars += specials;
     }
 
+    // Fill the remaining password
     const remainingLength = length - pass.length;
     for (let i = 0; i < remainingLength; i++) {
-      pass.push(allChars[Math.floor(Math.random() * allChars.length)]);
+      const randChar = allChars[Math.floor(Math.random() * allChars.length)];
+      pass.push(randChar);
     }
 
+    // Shuffle the array to randomize order
     for (let i = pass.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
       [pass[i], pass[j]] = [pass[j], pass[i]];
     }
 
     setPassword(pass.join(""));
-  }, [length, numallowed, charallowed]);
+  }, [length, numallowed, charallowed, setPassword]);
+
+
+  // const copyPwdToClipBoard = useCallback(() => {
+  //   passwordRef.current?.select();
+  //   passwordRef.current?.setSelectionRange(0,);
+  //   window.navigator.clipboard.writeText(password);
+  // }, [password])
+
 
   const copyPwdToClipBoard = useCallback(() => {
     if (passwordRef.current) {
@@ -46,85 +69,109 @@ export default function Passwordgenrator() {
         .writeText(password)
         .then(() => {
           setCopied(true);
-          setTimeout(() => setCopied(false), 2000);
+          setTimeout(() => setCopied(false), 2000); // Reset after 2s
         })
-        .catch((err) => {
+        .catch(err => {
           console.error("Failed to copy: ", err);
         });
     }
   }, [password]);
 
+
+
+
+  //useEffect hook
   useEffect(() => {
     pwdGenrator();
-  }, [length, numallowed, charallowed, pwdGenrator]);
+  }, [length, numallowed, charallowed, pwdGenrator])
+
+
+
 
   return (
-    <div className="w-full min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-900 via-indigo-800 to-blue-700 p-4">
-      <div className="w-full max-w-lg bg-white/10 backdrop-blur-md border border-white/20 shadow-2xl rounded-2xl p-6 text-white">
-        <h1 className="text-3xl font-bold text-center mb-6">🔐 Password Generator</h1>
+    <div className="w-full max-w-lg mx-auto my-6 sm:px-6">
+      <div className="bg-gray-700 text-orange-500 rounded-2xl shadow-2xl p-5 sm:p-6 border border-orange-400/20">
 
-        <div className="relative mb-6">
-          <input
-            type="text"
-            value={password}
-            ref={passwordRef}
-            readOnly
-            className="w-full px-4 py-3 text-lg text-black rounded-lg outline-none bg-white shadow-inner"
-            placeholder="Your secure password"
-          />
-          <button
-            onClick={copyPwdToClipBoard}
-            className="absolute right-2 top-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-1.5 rounded-lg transition-all"
-          >
-            {copied ? "✅ Copied" : "📋 Copy"}
-          </button>
-        </div>
+        <h1 className="text-white text-xl sm:text-3xl font-bold text-center mb-5 sm:mb-6">
+          🔐 Password Generator
+        </h1>
 
-        <div className="flex flex-col gap-4">
-          <div className="flex items-center justify-between">
-            <label htmlFor="length" className="font-medium">
-              Password Length: <span className="text-orange-400 font-semibold">{length}</span>
-            </label>
+        {/* Password Field and Copy Button */}
+        <div className="flex flex-col sm:flex-row gap-3 mb-6">
+
+          <div className="relative flex-grow">
             <input
-              id="length"
-              type="range"
-              min="8"
-              max="32"
-              value={length}
-              onChange={(e) => setLength(parseInt(e.target.value))}
-              className="w-1/2 accent-orange-500"
+              type="text"
+              value={password}
+              readOnly
+              ref={passwordRef}
+              className="w-full px-3 py-2 text-sm sm:text-base text-black rounded-lg bg-white shadow-inner outline-none overflow-x-auto"
+              placeholder="Your secure password"
             />
           </div>
 
-          <div className="flex items-center justify-between">
-            <label htmlFor="numInp" className="font-medium">Include Numbers</label>
-            <label className="inline-flex relative items-center cursor-pointer">
-              <input
-                type="checkbox"
-                id="numInp"
-                checked={numallowed}
-                onChange={() => setNumAllowed((prev) => !prev)}
-                className="sr-only peer"
-              />
-              <div className="w-11 h-6 bg-gray-400 peer-focus:outline-none rounded-full peer peer-checked:bg-green-500 after:content-[''] after:absolute after:left-[4px] after:top-[3px] after:bg-white after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:after:translate-x-full"></div>
+          <div className="relative group self-center sm:self-auto">
+
+            <button
+              onClick={copyPwdToClipBoard}
+              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-all"
+            >
+              📋
+            </button>
+            <span
+              className="absolute bottom-full mb-2 left-1/2 transform -translate-x-1/2 text-xs px-2 py-1 rounded bg-black text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none z-10"
+            >
+              {copied ? "Copied!" : "Copy"}
+            </span>
+          </div>
+        </div>
+
+        {/* Controls */}
+        <div className="flex flex-col gap-5 text-sm text-white">
+          {/* Length Slider */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+            <label htmlFor="len" className="font-medium">
+              Password Length: <span className="text-orange-400 font-semibold">{length}</span>
             </label>
+            <input
+              type="range"
+              id="len"
+              min={8}
+              max={100}
+              value={length}
+              onChange={(e) => setLength(Number(e.target.value))}
+              className="w-full sm:w-1/2 accent-orange-500"
+            />
           </div>
 
-          <div className="flex items-center justify-between">
+          {/* Number Toggle */}
+          <div className="flex justify-between items-center">
+            <label htmlFor="numInp" className="font-medium">Include Numbers</label>
+            <input
+              type="checkbox"
+              id="numInp"
+              checked={numallowed}
+              onChange={() => setNumAllowed((prev) => !prev)}
+              className="w-5 h-5 accent-orange-400"
+            />
+          </div>
+
+          {/* Special Character Toggle */}
+          <div className="flex justify-between items-center">
             <label htmlFor="charInp" className="font-medium">Include Special Characters</label>
-            <label className="inline-flex relative items-center cursor-pointer">
-              <input
-                type="checkbox"
-                id="charInp"
-                checked={charallowed}
-                onChange={() => setCharAllowed((prev) => !prev)}
-                className="sr-only peer"
-              />
-              <div className="w-11 h-6 bg-gray-400 peer-focus:outline-none rounded-full peer peer-checked:bg-pink-500 after:content-[''] after:absolute after:left-[4px] after:top-[3px] after:bg-white after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:after:translate-x-full"></div>
-            </label>
+            <input
+              type="checkbox"
+              id="charInp"
+              checked={charallowed}
+              onChange={() => setCharAllowed((prev) => !prev)}
+              className="w-5 h-5 accent-orange-400"
+            />
           </div>
         </div>
       </div>
     </div>
   );
+
+
+
 }
